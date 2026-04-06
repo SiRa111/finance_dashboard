@@ -1,0 +1,9 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "java -Dserver.port=$PORT -jar target/finance_dashboard-0.0.1-SNAPSHOT.jar"
+  }
+}
