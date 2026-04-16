@@ -31,25 +31,26 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/users/register", "/api/users/login", "/api/users/bootstrap-admin").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        
-                        // Dashboard - all authenticated users
-                        .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "ANALYST", "VIEWER")
-                        
-                        // Only ADMIN can create, update, delete transactions
-                        .requestMatchers(HttpMethod.POST, "/api/transactions/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/transactions/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/transactions/**").hasRole("ADMIN")
-                        // ANALYST can only read
-                        .requestMatchers(HttpMethod.GET, "/api/transactions/**").hasAnyRole("ADMIN", "ANALYST")
-                        // Users - ADMIN only
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
-                        
-                        // Everything else requires authentication
-                        .anyRequest().authenticated()
-                )
+    // 1. Public endpoints (Make sure these are FIRST)
+    .requestMatchers("/", "/index.html", "/static/**", "/css/**", "/js/**").permitAll()
+    .requestMatchers("/api/users/register", "/api/users/login", "/api/users/bootstrap-admin").permitAll()
+    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+    
+    // 2. Dashboard access
+    .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "ANALYST", "VIEWER")
+    
+    // 3. Transactions (Method-specific security)
+    .requestMatchers(HttpMethod.GET, "/api/transactions/**").hasAnyRole("ADMIN", "ANALYST")
+    .requestMatchers(HttpMethod.POST, "/api/transactions/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.PATCH, "/api/transactions/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.DELETE, "/api/transactions/**").hasRole("ADMIN")
+    
+    // 4. Admin-only user management (Catches everything else under /api/users/)
+    .requestMatchers("/api/users/**").hasRole("ADMIN")
+    
+    // 5. Final Catch-all
+    .anyRequest().authenticated()
+)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
